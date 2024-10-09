@@ -28,6 +28,7 @@ def search(string, sub_string, case_sensitivity, method, count):
     dictionary = {}
     for i in range(len(list_of_finds)):
         dictionary[sub_string[i]] = list_of_finds[i]
+    dictionary = get_first_n_occurrences(dictionary, count, method)
     return dictionary
 
 
@@ -131,20 +132,53 @@ def build_shift_table(pattern: str) -> dict:
     return d
 
 
-def make_table(t):
-    S = set()  # Набор уникальных символов в подстроке
-    M = len(t)  # Длина подстроки
-    d = {}  # Таблица смещений
+def make_table(substring):
+    set_of_chars = set()  # Набор уникальных символов в подстроке
+    len_substring = len(substring)  # Длина подстроки
+    dictionary = {}  # Таблица смещений
 
-    for i in range(M - 2, -1, -1):  # Проходим по подстроке с предпоследнего символа
-        if t[i] not in S:  # Если символ еще не был добавлен в таблицу смещений
-            d[t[i]] = M - i - 1
-            S.add(t[i])
+    for i in range(len_substring - 2, -1, -1):  # Проходим по подстроке с предпоследнего символа
+        if substring[i] not in set_of_chars:  # Если символ еще не был добавлен в таблицу смещений
+            dictionary[substring[i]] = len_substring - i - 1
+            set_of_chars.add(substring[i])
 
-    if t[M - 1] not in S:  # Отдельно обрабатываем последний символ подстроки
-        d[t[M - 1]] = M
+    if substring[len_substring - 1] not in set_of_chars:  # Отдельно обрабатываем последний символ подстроки
+        dictionary[substring[len_substring - 1]] = len_substring
 
-    d['*'] = M  # Смещение для всех остальных символов (которых нет в подстроке)
-    return d
+    dictionary['*'] = len_substring  # Смещение для всех остальных символов (которых нет в подстроке)
+    return dictionary
 
-print(search('abc', ('abc', 'a'), False, 'first', 1))
+
+def get_first_n_occurrences(substrings_dict, n, order='first'):
+    # Шаг 1: Собираем все вхождения в виде списка с подстрокой и её индексом
+    all_occurrences = []
+    for substring, occurrences in substrings_dict.items():
+        if occurrences is None:
+            continue
+        for index in occurrences:
+            all_occurrences.append((substring, index))
+
+    # Шаг 2: Сортируем в зависимости от порядка поиска
+    if order == 'first':
+        # Прямой поиск: сортируем по индексу, затем по подстроке
+        all_occurrences.sort(key=lambda x: (x[1], x[0]))
+    elif order == 'last':
+        # Обратный поиск: сортируем сначала по убыванию индексов, затем по алфавиту
+        all_occurrences.sort(key=lambda x: (-x[1], x[0]))
+    else:
+        raise ValueError("Order must be either 'first' or 'last'.")
+
+    # Шаг 3: Оставляем только первые n вхождений
+    selected_occurrences = all_occurrences[:n]
+
+    # Шаг 4: Формируем новый словарь с теми же ключами
+    result = {key: [] for key in substrings_dict}
+
+    # Шаг 5: Заполняем словарь первыми вхождениями
+    for substring, index in selected_occurrences:
+        result[substring].append(index)
+
+    # Шаг 6: Преобразуем значения в кортежи, как в исходных данных
+    result = {key: tuple(value) if value else None for key, value in result.items()}
+
+    return result
