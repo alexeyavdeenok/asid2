@@ -109,6 +109,9 @@ def main():
             mas = [i, len(substrings[0]), Fore.RED]
             list_of_subs.append(tuple(mas))
         print(color_text(target_string, list_of_subs))
+    else:
+        print(color_text_many(target_string, make_tuple_of_subs(search(target_string, substrings, case_sensitivity
+                                                                 , method, count))))
 
 
 def color_text(text, highlights):
@@ -137,6 +140,81 @@ def color_text(text, highlights):
     colored_text += text[last_index:]
 
     return colored_text
+
+
+def make_tuple_of_subs(dictionary):
+    list_of_tuples = []
+    colors = [Fore.GREEN, Fore.RED, Fore.YELLOW, Fore.BLUE, Fore.BLACK + Back.WHITE, Fore.CYAN,
+              Fore.MAGENTA, Fore.RED + Back.WHITE, Fore.YELLOW + Back.WHITE, Fore.GREEN + Back.WHITE,
+              Fore.MAGENTA + Back.WHITE]
+    index_colors = 0
+    for key, value in dictionary.items():
+        if value is None:
+            continue
+        for i in value:
+            list_of_tuples.append(tuple([i, key, colors[index_colors]]))
+        index_colors += 1
+    return list_of_tuples
+
+
+# def color_text_many(text, subs):
+#     subs.sort(key=lambda x: (x[0], x[1]))
+#     current_index = 0
+#     new_text = text[current_index:subs[0][0]]
+#     current_index += len(new_text)
+#     index_of_subs = 0
+#     while current_index < len(text):
+#         if current_index == subs[index_of_subs][0]:
+#             new_text += subs[index_of_subs][2] + text[subs[index_of_subs][0]:subs[index_of_subs][0] +
+#                                                                           len(subs[index_of_subs][1])] + Style.RESET_ALL
+#             current_index += len(subs[index_of_subs][1])
+#             index_of_subs += 1
+#         elif current_index > subs[index_of_subs][0]:
+#             if current_index > subs[index_of_subs][0] + len(subs[index_of_subs][1]) - 1:
+#                 index_of_subs += 1
+#                 new_text += text[current_index]
+#                 current_index += 1
+#             else:
+#                 new_text += subs[index_of_subs][2] + text[current_index: subs[index_of_subs][0] + len(subs[index_of_subs][1])] \
+#                             + Style.RESET_ALL
+#         else:
+#             new_text += text[current_index]
+#             current_index += 1
+#     return new_text
+def color_text_many(text, subs):
+    # Sort first by the start index (x[0]) and then alphabetically by the substring (x[1])
+    subs.sort(key=lambda x: (x[0], x[1]))  # Sort by index and then by the substring alphabetically
+    colored_text = ""
+    current_index = 0
+    subs_index = 0
+
+    while subs_index < len(subs):
+        start, substring, color = subs[subs_index]
+        length = len(substring)
+
+        # If the current index is less than the start of the substring, add the plain text until that point
+        if current_index < start:
+            colored_text += text[current_index:start]
+            current_index = start
+
+        # If the current index overlaps with the new substring, handle overlap
+        if current_index >= start:
+            overlap = current_index - start
+            non_overlap_substring = substring[overlap:]  # Take the non-overlapping part of the substring
+
+            # Add the colored non-overlapping part of the substring
+            colored_text += color + non_overlap_substring + Style.RESET_ALL
+            current_index += len(non_overlap_substring)
+
+        subs_index += 1
+
+    # Add any remaining plain text after the last colored substring
+    if current_index < len(text):
+        colored_text += text[current_index:]
+
+    return colored_text
+
+
 
 
 if __name__ == "__main__":
