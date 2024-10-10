@@ -32,9 +32,40 @@ def get_first_n_occurrences(substrings_dict, n, order='first'):
 
     return result
 
-# Пример использования:
-substrings_dict4 = {'abc': (1,), 'a': (1,)}
-substrings_dict1 = {'aba': (0, 5, 7), 'bba': None}
-substrings_dict2 = {'aba': (7, 5, 0), 'bba': (3,)}
-n = 5
-print(get_first_n_occurrences(substrings_dict1, n, 'last'))
+
+def highlight_substrings(text, substring, color_code="\033[93m"):  # 93 - желтый
+    # Получаем индексы всех вхождений подстроки
+    def find_substring_indices(text, substring):
+        indices = []
+        start = 0
+        while start < len(text):
+            start = text.find(substring, start)
+            if start == -1:
+                break
+            indices.append(start)
+            start += len(substring)
+        return indices
+
+    indices = find_substring_indices(text, substring)
+    if not indices:
+        return text  # Если вхождений нет, возвращаем исходную строку
+
+    highlighted_text = ""
+    last_index = 0
+
+    # Проходим по каждому индексу и выделяем цветом
+    for index in indices:
+        highlighted_text += text[last_index:index]  # Добавляем текст до подстроки
+        highlighted_text += f"{color_code}{substring}\033[0m"  # Добавляем подстроку с цветом
+        last_index = index + len(substring)
+
+    highlighted_text += text[last_index:]  # Добавляем оставшуюся часть строки
+
+    return highlighted_text
+
+
+# Пример использования
+input_text = "Это пример строки с повторяющейся подстрокой. Подстрока - это часть строки."
+substring_to_highlight = "строк"
+result = highlight_substrings(input_text, substring_to_highlight)
+print(result)

@@ -1,5 +1,6 @@
 import time
 
+
 def log_execution_time(func):
     def wrapper(*args, **kwargs):
         start_time = time.perf_counter()  # Точнее замер начального времени
@@ -197,3 +198,4 @@ def get_first_n_occurrences(substrings_dict, n, order='first'):
 
     return result
 
+print(search('abababab', 'ab', False, 'last', 10))
