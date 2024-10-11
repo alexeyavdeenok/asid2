@@ -1,18 +1,3 @@
-import time
-
-
-def log_execution_time(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()  # Точнее замер начального времени
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()  # Точнее замер времени после выполнения
-        execution_time = end_time - start_time
-        print(f"Function '{func.__name__}' executed in {execution_time:.8f} seconds")
-        return result
-    return wrapper
-
-
-@log_execution_time
 def search(string, sub_string, case_sensitivity, method, count):
     if isinstance(sub_string, str):
         sub_string = [sub_string]  # Приводим подстроки к списку, если это одна строка
@@ -198,4 +183,3 @@ def get_first_n_occurrences(substrings_dict, n, order='first'):
 
     return result
 
-print(search('abababab', 'ab', False, 'last', 10))

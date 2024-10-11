@@ -1,7 +1,19 @@
 import argparse
 import os
+import time
 from search import search
 from colorama import init, Fore, Style, Back
+
+
+def log_execution_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()  # Точнее замер начального времени
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()  # Точнее замер времени после выполнения
+        execution_time = end_time - start_time
+        print(f"Function '{func.__name__}' executed in {execution_time:.8f} seconds")
+        return result
+    return wrapper
 
 
 # Создание парсера для аргументов командной строки
@@ -76,6 +88,7 @@ def read_file(file_path):
 
 
 # Главная функция, которая получает аргументы и вызывает функцию поиска
+@log_execution_time
 def main():
     parser = create_parser()
     args = parser.parse_args()
@@ -157,62 +170,48 @@ def make_tuple_of_subs(dictionary):
     return list_of_tuples
 
 
-# def color_text_many(text, subs):
-#     subs.sort(key=lambda x: (x[0], x[1]))
-#     current_index = 0
-#     new_text = text[current_index:subs[0][0]]
-#     current_index += len(new_text)
-#     index_of_subs = 0
-#     while current_index < len(text):
-#         if current_index == subs[index_of_subs][0]:
-#             new_text += subs[index_of_subs][2] + text[subs[index_of_subs][0]:subs[index_of_subs][0] +
-#                                                                           len(subs[index_of_subs][1])] + Style.RESET_ALL
-#             current_index += len(subs[index_of_subs][1])
-#             index_of_subs += 1
-#         elif current_index > subs[index_of_subs][0]:
-#             if current_index > subs[index_of_subs][0] + len(subs[index_of_subs][1]) - 1:
-#                 index_of_subs += 1
-#                 new_text += text[current_index]
-#                 current_index += 1
-#             else:
-#                 new_text += subs[index_of_subs][2] + text[current_index: subs[index_of_subs][0] + len(subs[index_of_subs][1])] \
-#                             + Style.RESET_ALL
-#         else:
-#             new_text += text[current_index]
-#             current_index += 1
-#     return new_text
 def color_text_many(text, subs):
     # Sort first by the start index (x[0]) and then alphabetically by the substring (x[1])
     subs.sort(key=lambda x: (x[0], x[1]))  # Sort by index and then by the substring alphabetically
     colored_text = ""
     current_index = 0
-    subs_index = 0
 
-    while subs_index < len(subs):
-        start, substring, color = subs[subs_index]
+    while subs:
+        start, substring, color = subs.pop(0)  # Extract next substring details
         length = len(substring)
 
-        # If the current index is less than the start of the substring, add the plain text until that point
+        # Add the plain text between current_index and the start of the next match
         if current_index < start:
             colored_text += text[current_index:start]
             current_index = start
 
-        # If the current index overlaps with the new substring, handle overlap
-        if current_index >= start:
-            overlap = current_index - start
-            non_overlap_substring = substring[overlap:]  # Take the non-overlapping part of the substring
+        # Check for overlap with previously colored text
+        if current_index > start:
+            overlap = current_index - start  # Calculate overlap length
+            non_overlap_substring = substring[overlap:]  # Get the non-overlapping part of the substring
+            original_substring_part = text[current_index:current_index + len(non_overlap_substring)]
 
-            # Add the colored non-overlapping part of the substring
-            colored_text += color + non_overlap_substring + Style.RESET_ALL
+            # Color only the remaining part
+            colored_text += color + original_substring_part + Style.RESET_ALL
+
+            # Update the current index
             current_index += len(non_overlap_substring)
+        else:
+            # No overlap, color the entire substring
+            original_substring_part = text[start:start + length]
+            colored_text += color + original_substring_part + Style.RESET_ALL
 
-        subs_index += 1
+            # Move the current index past the colored substring
+            current_index = start + length
 
     # Add any remaining plain text after the last colored substring
     if current_index < len(text):
         colored_text += text[current_index:]
 
     return colored_text
+
+
+
 
 
 
