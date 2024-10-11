@@ -127,3 +127,19 @@ def color_text_many(text, subs):
         colored_text += text[current_index:]
 
     return colored_text
+
+def main():
+    parser = create_parser()
+
+    # Если пользователь не указал путь к файлу после опции -f
+    if '-f' in sys.argv or '--file' in sys.argv:
+        # Проверьте, есть ли значение после -f
+        if '-f' in sys.argv and len(sys.argv) <= sys.argv.index('-f') + 1:
+            print("Ошибка: Аргумент '-f' должен быть сопровождён именем файла.")
+            sys.exit(1)
+        if '--file' in sys.argv and len(sys.argv) <= sys.argv.index('--file') + 1:
+            print("Ошибка: Аргумент '--file' должен быть сопровождён именем файла.")
+            sys.exit(1)
+
+    # Парсим аргументы
+    args = parser.parse_args()

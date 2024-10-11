@@ -80,11 +80,17 @@ def create_parser():
 
 
 # Функция для чтения файла, если указан путь к файлу
-def read_file(file_path):
+def read_file(file_path, line_limit=10):
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"Файл {file_path} не найден.")
     with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
+        lines = file.readlines()  # Читаем все строки файла
+
+        # Ограничиваем количество строк до line_limit
+        limited_lines = lines[:line_limit]
+
+        # Соединяем ограниченные строки в одну строку
+        return ''.join(limited_lines)
 
 
 # Главная функция, которая получает аргументы и вызывает функцию поиска
@@ -95,7 +101,11 @@ def main():
 
     # Если указан файл, читаем содержимое из файла
     if args.file:
-        target_string = read_file(args.file)
+        try:
+            target_string = read_file(args.file)
+        except FileNotFoundError:
+            print('Файл не найден')
+            return
     else:
         if args.string is None:
             raise ValueError("Необходимо указать либо строку, либо путь к файлу.")
@@ -107,24 +117,25 @@ def main():
     method = args.method
     count = args.count
     limit = args.limit
-    print(target_string, substrings, case_sensitivity, method, count)
 
-    # Здесь должна быть реализация функции поиска в search.py
-    # Например:
-    # from search import search
-    # result = search(target_string, substrings, case_sensitivity, method, count)
     init()
-    # Выводим результат (для примера используем заглушку)
+
     if len(substrings) == 1:
         tuple_subs = search(target_string, substrings[0], case_sensitivity, method, count)
-        list_of_subs = []
-        for i in tuple_subs:
-            mas = [i, len(substrings[0]), Fore.RED]
-            list_of_subs.append(tuple(mas))
-        print(color_text(target_string, list_of_subs))
+        if tuple_subs is None:
+            print(target_string)
+        else:
+            list_of_subs = []
+            for i in tuple_subs:
+                mas = [i, len(substrings[0]), Fore.RED]
+                list_of_subs.append(tuple(mas))
+            print(color_text(target_string, list_of_subs))
     else:
-        print(color_text_many(target_string, make_tuple_of_subs(search(target_string, substrings, case_sensitivity
-                                                                 , method, count))))
+        dictionary = search(target_string, substrings, case_sensitivity, method, count)
+        if dictionary is None:
+            print(target_string)
+        else:
+            print(color_text_many(target_string, make_tuple_of_subs(dictionary)))
 
 
 def color_text(text, highlights):
@@ -209,11 +220,6 @@ def color_text_many(text, subs):
         colored_text += text[current_index:]
 
     return colored_text
-
-
-
-
-
 
 
 if __name__ == "__main__":
